@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Map;
 
 @RestController
 public class HealthCheckController {
@@ -19,9 +20,12 @@ public class HealthCheckController {
     private HealthCheckRepository repository;
 
     @GetMapping("/healthz")
-    public ResponseEntity<Void> healthCheck(@RequestBody(required = false) String body) {
+    public ResponseEntity<Void> healthCheck(@RequestBody(required = false) String body , @RequestParam Map<String, String> params) {
         if (body != null && !body.isEmpty()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().build(); //400
+        }
+        if (!params.isEmpty()) {
+            return ResponseEntity.badRequest().build(); //400
         }
 
         try {
@@ -33,7 +37,7 @@ public class HealthCheckController {
             headers.setCacheControl("no-cache, no-store, must-revalidate");
             headers.setPragma("no-cache");
 
-            return ResponseEntity.ok().headers(headers).build();
+            return ResponseEntity.ok().headers(headers).build(); //200
         } catch (DataAccessException e) {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
         } catch (Exception e) {
@@ -54,5 +58,5 @@ public class HealthCheckController {
     )
     public ResponseEntity<Void> notAllowed() {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
-    }
+    } //405
 }
