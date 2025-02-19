@@ -1,4 +1,4 @@
-name: Run WebApp Tests to Check if the PR is ok to merge or not
+name: testCI
 
 on:
   pull_request:
@@ -9,6 +9,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      DB_NAME: webapp
+      DB_USER: saurabh
+      DB_PASSWORD: saurabh
+      DB_ROOT_PASSWORD: Saurabh
+      APP_GROUP: saurabh_group
+      APP_USER: saurabh_user
+      APP_DIR: /opt/csye6225
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -16,12 +25,35 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y unzip mysql-client openjdk-17-jdk maven
+          sudo apt install -y unzip mysql-server mysql-client openjdk-17-jdk maven
 
-      - name: Run Setup Script
-        run: sudo bash setup_webapp.sh
+      - name: Configure and Start MySQL
+        run: |
+          sudo systemctl enable mysql
+          sudo systemctl start mysql
+          
+          # Configure root password and secure installation
+          sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${{ env.DB_ROOT_PASSWORD }}'; FLUSH PRIVILEGES;"
+          
+          # Create database and user
+          sudo mysql -u root -p"${{ env.DB_ROOT_PASSWORD }}" -e "CREATE DATABASE IF NOT EXISTS ${{ env.DB_NAME }};"
+          sudo mysql -u root -p"${{ env.DB_ROOT_PASSWORD }}" -e "CREATE USER IF NOT EXISTS '${{ env.DB_USER }}'@'%' IDENTIFIED BY '${{ env.DB_PASSWORD }}';"
+          sudo mysql -u root -p"${{ env.DB_ROOT_PASSWORD }}" -e "GRANT ALL PRIVILEGES ON ${{ env.DB_NAME }}.* TO '${{ env.DB_USER }}'@'%';"
+
+      - name: Setup Application User and Directory
+        run: |
+          sudo groupadd ${{ env.APP_GROUP }}
+          sudo useradd -m -g ${{ env.APP_GROUP }} -s /bin/bash ${{ env.APP_USER }}
+          
+          sudo mkdir -p ${{ env.APP_DIR }}
+          sudo chown ${{ env.APP_USER }}:${{ env.APP_GROUP }} ${{ env.APP_DIR }}
+          sudo chmod 750 ${{ env.APP_DIR }}
+          
+          if [ -f "webapp.zip" ]; then
+            sudo unzip -o webapp.zip -d ${{ env.APP_DIR }}
+            sudo chown -R ${{ env.APP_USER }}:${{ env.APP_GROUP }} ${{ env.APP_DIR }}
+            sudo chmod -R 750 ${{ env.APP_DIR }}
+          fi
 
       - name: Run Tests
-        run: |
-          cd test
-          mvn test -Dtest=HealthCheckControllerTest
+        run: mvn test -Dtest=HealthCheckControllerTest
