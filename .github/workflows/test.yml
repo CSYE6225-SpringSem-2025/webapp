@@ -1,4 +1,4 @@
-name: testci4
+name: testci3
 
 on:
   pull_request:
