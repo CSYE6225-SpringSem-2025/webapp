@@ -199,3 +199,23 @@ README.html
 *.iml
 .idea
 .exercism
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+.env.staging
+.env.backup
+.env.save
+.env.old
+
+# Keep example environment file
+!.env.example
+
+# In case you're using other environment file naming conventions
+*.env
+.environment
+.credentials
