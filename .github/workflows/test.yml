@@ -1,4 +1,4 @@
-name: testci
+name: testci2
 
 on:
   pull_request:
@@ -20,32 +20,30 @@ jobs:
 
       - name: Configure MySQL
         run: |
-          sudo systemctl enable mysql
-          sudo systemctl start mysql
+          # Stop MySQL if it's running
+          sudo systemctl stop mysql
           
-          # First, set root password without requiring current password
-          sudo mysqld_safe --skip-grant-tables --skip-networking &
+          # Start MySQL with temporary settings
+          sudo mkdir -p /var/run/mysqld
+          sudo chown mysql:mysql /var/run/mysqld
+          sudo mysqld --skip-grant-tables --skip-networking &
           sleep 10
+          
+          # Set root password
           sudo mysql -e "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY 'Saurabh';"
-          sudo killall mysqld
-          sleep 10
+          
+          # Restart MySQL normally
+          sudo pkill mysqld
+          sleep 5
           sudo systemctl start mysql
           sleep 5
           
-          # Now create database and user with the root password
-          sudo mysql -u root -pSaurabh -e "CREATE DATABASE IF NOT EXISTS webapp;"
-          sudo mysql -u root -pSaurabh -e "CREATE USER IF NOT EXISTS 'saurabh'@'%' IDENTIFIED BY 'saurabh';"
-          sudo mysql -u root -pSaurabh -e "GRANT ALL PRIVILEGES ON webapp.* TO 'saurabh'@'%';"
-          sudo mysql -u root -pSaurabh -e "FLUSH PRIVILEGES;"
+          # Create database and user
+          sudo mysql -uroot -pSaurabh -e "CREATE DATABASE IF NOT EXISTS webapp;"
+          sudo mysql -uroot -pSaurabh -e "CREATE USER IF NOT EXISTS 'saurabh'@'%' IDENTIFIED BY 'saurabh';"
+          sudo mysql -uroot -pSaurabh -e "GRANT ALL PRIVILEGES ON webapp.* TO 'saurabh'@'%';"
+          sudo mysql -uroot -pSaurabh -e "FLUSH PRIVILEGES;"
         shell: /usr/bin/bash -e {0}
-        env:
-          DB_NAME: webapp
-          DB_USER: saurabh
-          DB_PASSWORD: saurabh
-          DB_ROOT_PASSWORD: Saurabh
-          APP_GROUP: saurabh_group
-          APP_USER: saurabh_user
-          APP_DIR: /opt/csye6225
 
       - name: Setup Application User and Directory
         run: |
