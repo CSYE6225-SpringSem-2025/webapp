@@ -45,20 +45,6 @@ jobs:
           sudo mysql -uroot -pSaurabh -e "FLUSH PRIVILEGES;"
         shell: /usr/bin/bash -e {0}
 
-      - name: Setup Application User and Directory
-        run: |
-          sudo groupadd saurabh_group || true
-          sudo useradd -m -g saurabh_group -s /bin/bash saurabh_user || true
-          
-          sudo mkdir -p /opt/csye6225
-          sudo chown saurabh_user:saurabh_group /opt/csye6225
-          sudo chmod 750 /opt/csye6225
-          
-          if [ -f "webapp.zip" ]; then
-            sudo unzip -o webapp.zip -d /opt/csye6225
-            sudo chown -R saurabh_user:saurabh_group /opt/csye6225
-            sudo chmod -R 750 /opt/csye6225
-          fi
 
       - name: Run Tests
         run: mvn test -Dtest=HealthCheckControllerTest
