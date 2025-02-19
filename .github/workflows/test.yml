@@ -1,0 +1,27 @@
+name: Run WebApp Tests to Check if the PR is ok to merge or not
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y unzip mysql-client openjdk-17-jdk maven
+
+      - name: Run Setup Script
+        run: sudo bash setup_webapp.sh
+
+      - name: Run Tests
+        run: |
+          cd test
+          mvn test -Dtest=HealthCheckControllerTest
