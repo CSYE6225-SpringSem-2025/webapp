@@ -1,4 +1,4 @@
-name: testci2
+name: testci3
 
 on:
   pull_request:
@@ -9,42 +9,49 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: Saurabh
+          MYSQL_DATABASE: webapp
+          MYSQL_USER: saurabh
+          MYSQL_PASSWORD: saurabh
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install Dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y unzip mysql-server mysql-client openjdk-17-jdk maven
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
 
-      - name: Configure MySQL
+      - name: Install MySQL Client
         run: |
-          # Stop MySQL if it's running
-          sudo systemctl stop mysql
-          
-          # Start MySQL with temporary settings
-          sudo mkdir -p /var/run/mysqld
-          sudo chown mysql:mysql /var/run/mysqld
-          sudo mysqld --skip-grant-tables --skip-networking &
-          sleep 10
-          
-          # Set root password
-          sudo mysql -e "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY 'Saurabh';"
-          
-          # Restart MySQL normally
-          sudo pkill mysqld
-          sleep 5
-          sudo systemctl start mysql
-          sleep 5
-          
-          # Create database and user
-          sudo mysql -uroot -pSaurabh -e "CREATE DATABASE IF NOT EXISTS webapp;"
-          sudo mysql -uroot -pSaurabh -e "CREATE USER IF NOT EXISTS 'saurabh'@'%' IDENTIFIED BY 'saurabh';"
-          sudo mysql -uroot -pSaurabh -e "GRANT ALL PRIVILEGES ON webapp.* TO 'saurabh'@'%';"
-          sudo mysql -uroot -pSaurabh -e "FLUSH PRIVILEGES;"
-        shell: /usr/bin/bash -e {0}
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
 
+      - name: Verify MySQL Connection
+        run: |
+          while ! mysqladmin ping -h"127.0.0.1" -P"3306" --silent; do
+            sleep 1
+            echo "Waiting for MySQL to be ready..."
+          done
+          echo "MySQL is up and running"
 
       - name: Run Tests
         run: mvn test -Dtest=HealthCheckControllerTest
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/webapp
+          SPRING_DATASOURCE_USERNAME: saurabh
+          SPRING_DATASOURCE_PASSWORD: saurabh
