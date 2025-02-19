@@ -1,4 +1,4 @@
-name: Run WebApp Tests to Check if the PR is ok to merge or not
+name: testsCI
 
 on:
   pull_request:
