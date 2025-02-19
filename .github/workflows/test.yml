@@ -1,4 +1,4 @@
-name: testci3
+name: testci4
 
 on:
   pull_request:
@@ -13,14 +13,14 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: Saurabh
-          MYSQL_DATABASE: webapp
-          MYSQL_USER: saurabh
-          MYSQL_PASSWORD: saurabh
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD"
+          --health-cmd="mysqladmin ping -h localhost -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }}"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -52,6 +52,6 @@ jobs:
       - name: Run Tests
         run: mvn test -Dtest=HealthCheckControllerTest
         env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/webapp
-          SPRING_DATASOURCE_USERNAME: saurabh
-          SPRING_DATASOURCE_PASSWORD: saurabh
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ secrets.MYSQL_DATABASE }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.MYSQL_USER }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
