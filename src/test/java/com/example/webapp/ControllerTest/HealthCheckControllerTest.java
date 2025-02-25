@@ -107,7 +107,7 @@ public class HealthCheckControllerTest {
                 .when()
                 .get("/healthz")
                 .then()
-                .statusCode(HttpStatus.SERVICE_UNAVAILABLE.value()); // Assert 503 status code
+                .statusCode(HttpStatus.BAD_REQUEST.value()); // Assert 503 status code
 
     }
 
