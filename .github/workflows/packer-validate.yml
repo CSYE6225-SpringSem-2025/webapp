@@ -28,9 +28,10 @@ jobs:
           cd packer
           packer fmt -check .
           if [ $? -ne 0 ]; then
-            echo "Packer template is not properly formatted"
+            echo "Packer template not properly formatted"
             exit 1
           fi
+        shell: /usr/bin/bash -e {0}
 
       - name: Validate Template
         run: |
