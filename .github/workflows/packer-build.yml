@@ -51,6 +51,9 @@ jobs:
           packer init .
 
       - name: Build Images
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
         run: |
           cd packer
           packer build \
