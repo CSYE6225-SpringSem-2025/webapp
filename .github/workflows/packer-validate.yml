@@ -19,7 +19,9 @@ jobs:
           version: "1.9.4"
 
       - name: Initialize Packer
-        run: packer init .
+        run: |
+          cd packer
+          packer init .
 
       - name: Format Check
         run: |
