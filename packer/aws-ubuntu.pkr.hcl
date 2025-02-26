@@ -72,16 +72,17 @@ source "amazon-ebs" "ubuntu" {
 }
 
 # GCP Source
+# GCP Source
 source "googlecompute" "ubuntu" {
-  project_id          = var.gcp_project_id
-  service_account_key = var.gcp_account_file
+  project_id       = var.gcp_project_id
+  account_file     = var.gcp_account_file
   source_image_family = "ubuntu-2204-lts"
-  zone                = var.gcp_zone
-  image_name          = "csye6225-${formatdate("YYYY-MM-DD-hh-mm-ss", timestamp())}"
-  image_description   = "Ubuntu 24.04 Image for CSYE 6225"
-  ssh_username        = "ubuntu"
-  machine_type        = "e2-medium"
-  disk_size           = 25
+  zone             = var.gcp_zone
+  image_name       = "csye6225-${formatdate("YYYY-MM-DD-hh-mm-ss", timestamp())}"
+  image_description = "Ubuntu 24.04 Image for CSYE 6225"
+  ssh_username     = "ubuntu"
+  machine_type     = "e2-medium"
+  disk_size        = 25
 }
 
 build {
