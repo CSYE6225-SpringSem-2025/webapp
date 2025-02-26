@@ -52,8 +52,8 @@ jobs:
 
       - name: Build Images
         env:
-          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          gcp_account_file: ${{ secrets.GCP_SA_KEY }}
+          gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}
         run: |
           cd packer
           packer build \
