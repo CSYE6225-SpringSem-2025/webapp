@@ -53,10 +53,4 @@ jobs:
       - name: Build Images
         run: |
           cd packer
-          packer build \
-            -var "gcp_project_id=${{ secrets.GCP_PROJECT_ID }}" \
-            -var "gcp_sa_key=${{ secrets.GCP_SA_KEY }}" \
-            -var "aws_access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            -var "aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            -var "aws_region=us-east-1" \
-            .
+          packer build aws-ubuntu.pkr.hcl
