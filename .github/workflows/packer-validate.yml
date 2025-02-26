@@ -25,6 +25,7 @@ jobs:
 
       - name: Format Check
         run: |
+          cd packer
           packer fmt -check .
           if [ $? -ne 0 ]; then
             echo "Packer template is not properly formatted"
@@ -33,6 +34,7 @@ jobs:
 
       - name: Validate Template
         run: |
+          cd packer
           packer validate .
           if [ $? -ne 0 ]; then
             echo "Packer template validation failed"
