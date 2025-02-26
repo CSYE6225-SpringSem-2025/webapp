@@ -18,7 +18,8 @@ variable "aws_region" {
 }
 
 variable "gcp_account_file" {
-  type = string
+  type    = string
+  default = env("GCP_SA_KEY")
 }
 
 variable "gcp_project_id" {
@@ -73,7 +74,7 @@ source "amazon-ebs" "ubuntu" {
 # GCP Source
 source "googlecompute" "ubuntu" {
   project_id          = var.gcp_project_id
-  service_account_key = var.gcp_account_file # This will be your GitHub secret
+  service_account_key = var.gcp_account_file
   source_image_family = "ubuntu-2204-lts"
   zone                = var.gcp_zone
   image_name          = "csye6225-${formatdate("YYYY-MM-DD-hh-mm-ss", timestamp())}"
