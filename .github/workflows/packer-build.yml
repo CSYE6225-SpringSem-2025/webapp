@@ -54,10 +54,8 @@ jobs:
         env:
           gcp_account_file: ${{ secrets.GCP_SA_KEY }}
           gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}
+
         run: |
           cd packer
-          packer build \
-            -var "gcp_project_id=${{ secrets.GCP_PROJECT_ID }}" \
-            -var "gcp_account_file=${{ secrets.GCP_SA_KEY }}" \
-             aws-ubuntu.pkr.hcl
+          packer build aws-ubuntu.pkr.hcl
 
