@@ -16,9 +16,10 @@ variable "aws_region" {
   type    = string
   default = "us-east-1"
 }
+
 variable "gcp_account_file" {
   type    = string
-  default = env("GCP_SA_KEY")  # This will read from environment variable
+  default = env("GCP_SA_KEY") # This will read from environment variable
 }
 
 variable "gcp_project_id" {
@@ -52,21 +53,21 @@ source "amazon-ebs" "ubuntu" {
   launch_block_device_mappings {
     device_name           = "/dev/sda1"
     volume_size           = 25
-    volume_type          = "gp2"
+    volume_type           = "gp2"
     delete_on_termination = true
   }
 
   ssh_username = "ubuntu"
 
   # Added SSH configurations
-  ssh_timeout = "10m"
-  ssh_handshake_attempts = "100"
+  ssh_timeout             = "10m"
+  ssh_handshake_attempts  = "100"
   pause_before_connecting = "10s"
 
   # Added AWS-specific configurations
-  communicator = "ssh"
-  ssh_interface = "public_ip"
-  ssh_keep_alive_interval = "10s"
+  communicator              = "ssh"
+  ssh_interface             = "public_ip"
+  ssh_keep_alive_interval   = "10s"
   ssh_clear_authorized_keys = true
 }
 
@@ -74,7 +75,7 @@ source "amazon-ebs" "ubuntu" {
 source "googlecompute" "ubuntu" {
   project_id          = var.gcp_project_id
   account_file        = var.gcp_account_file
-  source_image_family = "ubuntu-2204-lts"  # Change this line
+  source_image_family = "ubuntu-2204-lts" # Change this line
   zone                = var.gcp_zone
   image_name          = "csye6225-${formatdate("YYYY-MM-DD-hh-mm-ss", timestamp())}"
   image_description   = "Ubuntu 24.04 Image for CSYE 6225"
@@ -126,8 +127,8 @@ build {
       "chmod +x /tmp/setup_webapp.sh",
       "sudo /tmp/setup_webapp.sh"
     ]
-    timeout = "15m"
-    max_retries = 2
+    timeout           = "15m"
+    max_retries       = 2
     expect_disconnect = true
   }
 }
