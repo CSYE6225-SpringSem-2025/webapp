@@ -18,8 +18,7 @@ variable "aws_region" {
 }
 
 variable "gcp_account_file" {
-  type    = string
-#  default = env("GCP_SA_KEY") # This will read from environment variable
+  type = string
 }
 
 variable "gcp_project_id" {
