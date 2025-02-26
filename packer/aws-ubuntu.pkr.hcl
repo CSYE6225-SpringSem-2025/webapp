@@ -71,8 +71,7 @@ source "amazon-ebs" "ubuntu" {
   ssh_clear_authorized_keys = true
 }
 
-# GCP Source
-# GCP Source
+
 source "googlecompute" "ubuntu" {
   project_id          = var.gcp_project_id
   account_file        = var.gcp_account_file
