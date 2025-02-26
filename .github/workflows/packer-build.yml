@@ -46,10 +46,13 @@ jobs:
           version: "1.9.4"
 
       - name: Initialize Packer
-        run: packer init .
+        run: |
+          cd packer
+          packer init .
 
       - name: Build Images
         run: |
+          cd packer
           packer build \
             -var "gcp_project_id=${{ secrets.GCP_PROJECT_ID }}" \
             -var "gcp_sa_key=${{ secrets.GCP_SA_KEY }}" \
