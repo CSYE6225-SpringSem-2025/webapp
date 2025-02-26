@@ -1,0 +1,38 @@
+name: Packer Template Validation
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**.pkr.hcl'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@main
+        with:
+          version: "1.9.4"
+
+      - name: Initialize Packer
+        run: packer init .
+
+      - name: Format Check
+        run: |
+          packer fmt -check .
+          if [ $? -ne 0 ]; then
+            echo "Packer template is not properly formatted"
+            exit 1
+          fi
+
+      - name: Validate Template
+        run: |
+          packer validate .
+          if [ $? -ne 0 ]; then
+            echo "Packer template validation failed"
+            exit 1
+          fi

@@ -1,0 +1,59 @@
+name: Build Custom Images
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [closed]
+    branches: [ main ]
+
+jobs:
+  build:
+    # Only run this job if the PR was merged or on direct push to main
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Setup Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@main
+        with:
+          version: "1.9.4"
+
+      - name: Initialize Packer
+        run: packer init .
+
+      - name: Build Images
+        run: |
+          packer build \
+            -var "gcp_project_id=${{ secrets.GCP_PROJECT_ID }}" \
+            -var "gcp_sa_key=${{ secrets.GCP_SA_KEY }}" \
+            -var "aws_access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            -var "aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+            -var "aws_region=us-east-1" \
+            .
