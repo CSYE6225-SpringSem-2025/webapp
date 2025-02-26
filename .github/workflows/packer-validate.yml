@@ -41,3 +41,4 @@ jobs:
             echo "Packer template validation failed"
             exit 1
           fi
+        shell: /usr/bin/bash -e {0}
