@@ -127,7 +127,7 @@ build {
       "chmod +x /tmp/setup_webapp.sh",
       "sudo /tmp/setup_webapp.sh"
     ]
-    timeout           = "15m"
+    timeout           = "16m"
     max_retries       = 2
     expect_disconnect = true
   }
