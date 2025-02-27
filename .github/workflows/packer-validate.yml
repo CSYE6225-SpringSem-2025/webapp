@@ -3,9 +3,6 @@ name: Packer Template Validation
 on:
   pull_request:
     branches: [ main ]
-    paths:
-      - '**.pkr.hcl'
-      - 'src/**'  # Also trigger on source code changes
 
 jobs:
   validate:
@@ -50,7 +47,6 @@ jobs:
           # Create a dummy JAR file if needed for validation
           mkdir -p ../target
           touch ../target/webapp-0.0.1-SNAPSHOT.jar || true
-          # Alternatively, you could modify the template temporarily for validation
 
       - name: Validate Template
         run: |
