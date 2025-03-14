@@ -17,7 +17,7 @@ variable "aws_region" {
   default = "us-east-1"
 }
 
-variable "new" {
+variable "gcp_account_file" {
   type    = string
   default = env("GCP_SA_KEY")
 }
