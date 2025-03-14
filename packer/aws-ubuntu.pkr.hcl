@@ -17,7 +17,7 @@ variable "aws_region" {
   default = "us-east-1"
 }
 
-variable "gcp_account_file" {
+variable "new" {
   type    = string
   default = env("GCP_SA_KEY")
 }
@@ -118,7 +118,7 @@ build {
 
   # Added pause between file uploads and script execution
   provisioner "shell" {
-        inline = ["sleep 10"]
+    inline = ["sleep 10"]
   }
 
   # Run setup script with improved error handling
