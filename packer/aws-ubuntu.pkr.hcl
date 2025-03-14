@@ -47,13 +47,11 @@ source "amazon-ebs" "ubuntu" {
     owners      = ["099720109477"]
   }
 
-  ami_name        = "csye6225-${formatdate("YYYY-MM-DD-hh-mm-ss", timestamp())}"
+  ami_name        = "csye6225MM-DD-hh-mm-ss", timestamp())}"
   ami_description = "Ubuntu 24.04 AMI for CSYE 6225"
 
   launch_block_device_mappings {
-    device_name           = "/dev/sda1"
-    volume_size           = 25
-    volume_type           = "gp2"
+    device_name           =
     delete_on_termination = true
   }
 
