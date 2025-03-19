@@ -4,10 +4,6 @@
 set -e
 
 # Configuration variables
-DB_NAME="webapp"
-DB_USER="saurabh"
-DB_ROOT_PASS="root"
-DB_USER_PASS="saurabh"
 APP_GROUP="saurabh_group"
 APP_USER="saurabh_user"
 APP_DIR="/opt/csye6225"
@@ -28,27 +24,11 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-commo
 sudo add-apt-repository -y universe
 sudo apt-get update
 
-# Install MySQL and Java with their dependencies
-echo "Installing MySQL and Java..."
+# Install Java and MySQL client only (NOT server)
+echo "Installing Java and MySQL client..."
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    mysql-server \
     openjdk-17-jre \
-    libaio1 \
-    libncurses5
-
-# Start and configure MySQL
-echo "Starting MySQL service..."
-sudo systemctl start mysql
-sudo systemctl enable mysql
-
-# Configure MySQL root password and create database
-echo "Configuring MySQL..."
-# Set root password
-sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH auth_socket;"
-sudo mysql -e "CREATE DATABASE IF NOT EXISTS $DB_NAME;"
-sudo mysql -e "CREATE USER IF NOT EXISTS '$DB_USER'@'localhost' IDENTIFIED BY '$DB_USER_PASS';"
-sudo mysql -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost';"
-sudo mysql -e "FLUSH PRIVILEGES;"
+    mysql-client
 
 # Create application user and group
 echo "Creating application user and group..."
@@ -79,6 +59,5 @@ sudo systemctl enable webapp.service
 echo "Verifying installations..."
 java -version
 mysql --version
-sudo systemctl status mysql --no-pager
 
 echo "Setup is complete!"

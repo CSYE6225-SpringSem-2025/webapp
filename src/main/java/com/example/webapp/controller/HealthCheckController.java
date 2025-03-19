@@ -22,7 +22,7 @@ public class HealthCheckController {
     @GetMapping("/healthz")
     public ResponseEntity<Void> healthCheck(@RequestBody(required = false) String body , @RequestParam Map<String, String> params) {
         if (body != null && !body.isEmpty()) {
-            return ResponseEntity.badRequest().build(); //400
+            return ResponseEntity.badRequest().build(); //40
         }
         if (!params.isEmpty()) {
             return ResponseEntity.badRequest().build(); //400

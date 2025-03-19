@@ -94,8 +94,8 @@ build {
   provisioner "file" {
     source      = "../target/webapp-0.0.1-SNAPSHOT.jar"
     destination = "/tmp/webapp-0.0.1-SNAPSHOT.jar"
-    max_retries = 3
-    timeout     = "10m"
+    max_retries = 5
+    timeout     = "30m"
   }
 
   provisioner "file" {
