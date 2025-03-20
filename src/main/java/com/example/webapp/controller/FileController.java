@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/v1")
@@ -65,6 +67,12 @@ public class FileController {
         }
     }
 
+    @GetMapping("/file")
+    public ResponseEntity<Map<String, Object>> getFileWithoutId() {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "File ID is required"));
+    }
+
     @DeleteMapping("/file/{id}")
     public ResponseEntity<Void> deleteFile(@PathVariable String id) {
         try {
@@ -77,6 +85,60 @@ public class FileController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
         }
+    }
+
+    @DeleteMapping("/file")
+    public ResponseEntity<Map<String, Object>> deleteFileWithoutId() {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "File ID is required"));
+    }
+
+    @PutMapping("/file/{id}")
+    public ResponseEntity<Map<String, Object>> putFileWithId(@PathVariable String id) {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(Map.of("error", "Method not allowed"));
+    }
+
+    @PutMapping("/file")
+    public ResponseEntity<Map<String, Object>> putFileWithoutId() {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(Map.of("error", "Method not allowed"));
+    }
+
+    @PatchMapping("/file/{id}")
+    public ResponseEntity<Map<String, Object>> patchFileWithId(@PathVariable String id) {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(Map.of("error", "Method not allowed"));
+    }
+
+    @PatchMapping("/file")
+    public ResponseEntity<Map<String, Object>> patchFileWithoutId() {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(Map.of("error", "Method not allowed"));
+    }
+
+    @RequestMapping(value = "/file/{id}", method = RequestMethod.OPTIONS)
+    public ResponseEntity<Map<String, Object>> optionsFileWithId(@PathVariable String id) {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(Map.of("error", "Method not allowed"));
+    }
+
+    @RequestMapping(value = "/file", method = RequestMethod.OPTIONS)
+    public ResponseEntity<Map<String, Object>> optionsFileWithoutId() {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(Map.of("error", "Method not allowed"));
+    }
+
+    @RequestMapping(value = "/file/{id}", method = RequestMethod.HEAD)
+    public ResponseEntity<Map<String, Object>> headFileWithId(@PathVariable String id) {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(Map.of("error", "Method not allowed"));
+    }
+
+    @RequestMapping(value = "/file", method = RequestMethod.HEAD)
+    public ResponseEntity<Map<String, Object>> headFileWithoutId() {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(Map.of("error", "Method not allowed"));
     }
 
     @GetMapping("/file/test")

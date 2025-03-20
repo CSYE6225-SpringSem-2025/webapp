@@ -50,18 +50,38 @@ public class FileService {
     }
 
     public void deleteFile(String id) throws Exception {
-        Optional<File> fileOpt = fileRepository.findById(id);
+        logger.info("Attempting to delete file with ID: {}", id);
 
-        if (fileOpt.isPresent()) {
-            File file = fileOpt.get();
+        try {
+            Optional<File> fileOpt = fileRepository.findById(id);
 
-            // Delete from S3
-            s3Service.deleteFile(file.getUrl());
+            if (fileOpt.isPresent()) {
+                File file = fileOpt.get();
+                logger.info("Found file: {}, with URL: {}", id, file.getUrl());
 
-            // Delete from database
-            fileRepository.delete(file);
-        } else {
-            throw new Exception("File not found");
+                try {
+                    // Delete from S3
+                    logger.info("Attempting to delete file from S3: {}", file.getUrl());
+                    s3Service.deleteFile(file.getUrl());
+                    logger.info("Successfully deleted file from S3: {}", file.getUrl());
+
+                    // Delete from database
+                    logger.info("Attempting to delete file record from database: {}", id);
+                    fileRepository.delete(file);
+                    logger.info("Successfully deleted file record from database: {}", id);
+                } catch (Exception e) {
+                    logger.error("Error during file deletion process: {}", e.getMessage(), e);
+                    throw new Exception("Error deleting file: " + e.getMessage(), e);
+                }
+            } else {
+                logger.warn("File not found with ID: {}", id);
+                throw new Exception("File not found");
+            }
+        } catch (Exception e) {
+            if (!"File not found".equals(e.getMessage())) {
+                logger.error("Unexpected error during file deletion: {}", e.getMessage(), e);
+            }
+            throw e;
         }
     }
 }

@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.UUID;
 
 @Service
@@ -20,7 +22,7 @@ public class S3Service {
     @Autowired
     private AmazonS3 amazonS3Client;
 
-    @Value("${S3_BUCKET:}")
+    @Value("${S3_BUCKET}")
     private String bucketName;
 
     public String uploadFile(MultipartFile file) throws IOException {
@@ -58,9 +60,15 @@ public class S3Service {
 
         try {
             String key = extractKeyFromUrl(fileUrl);
+            logger.info("About to delete S3 object with key: {}", key);
             amazonS3Client.deleteObject(bucketName, key);
+            logger.info("S3 deletion API call completed for key: {}", key);
+
+            // Verify deletion
+            boolean exists = amazonS3Client.doesObjectExist(bucketName, key);
+            logger.info("Object still exists after deletion? {}", exists);
         } catch (Exception e) {
-            logger.error("Error deleting from S3", e);
+            logger.error("Error in S3 deletion: {}", e.getMessage(), e);
         }
     }
 
@@ -73,6 +81,27 @@ public class S3Service {
     }
 
     private String extractKeyFromUrl(String fileUrl) {
-        return fileUrl.substring(fileUrl.indexOf(bucketName) + bucketName.length() + 1);
+        try {
+            URL url = new URL(fileUrl);
+            String path = url.getPath();
+
+            // Remove leading slash
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+
+            logger.info("Extracted path from URL: " + path);
+            return path;
+        } catch (MalformedURLException e) {
+            logger.error("Failed to parse URL: " + fileUrl, e);
+
+            // Fallback extraction method if URL parsing fails
+            int lastSlashIndex = fileUrl.lastIndexOf('/');
+            if (lastSlashIndex != -1) {
+                return fileUrl.substring(lastSlashIndex + 1);
+            }
+
+            return fileUrl;
+        }
     }
 }
