@@ -23,7 +23,7 @@ source "amazon-ebs" "ubuntu" {
       virtualization-type = "hvm"
     }
     most_recent = true
-    owners      = ["099720109477"]  # Canonical owner ID
+    owners      = ["099720109477"] # Canonical owner ID
   }
 
   ami_name        = "csye6225-${formatdate("YYYY-MM-DD-hh-mm-ss", timestamp())}"
