@@ -68,6 +68,34 @@
 			<version>5.4.0</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- Add these dependencies to your pom.xml -->
+
+			<!-- Existing dependencies -->
+
+			<!-- Spring AOP -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-aop</artifactId>
+			</dependency>
+
+			<!-- Micrometer Core -->
+			<dependency>
+				<groupId>io.micrometer</groupId>
+				<artifactId>micrometer-core</artifactId>
+			</dependency>
+
+			<!-- Micrometer Registry for StatsD -->
+			<dependency>
+				<groupId>io.micrometer</groupId>
+				<artifactId>micrometer-registry-statsd</artifactId>
+			</dependency>
+
+			<!-- AspectJ for aspect-oriented programming -->
+			<dependency>
+				<groupId>org.aspectj</groupId>
+				<artifactId>aspectjweaver</artifactId>
+			</dependency>
+
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
