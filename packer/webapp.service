@@ -1,6 +1,7 @@
 [Unit]
 Description=CSYE 6225 Web Application
 After=network.target
+Wants=amazon-cloudwatch-agent.service
 
 [Service]
 User=saurabh_user
@@ -8,11 +9,25 @@ Group=saurabh_group
 Type=simple
 WorkingDirectory=/opt/csye6225
 Environment="SPRING_CONFIG_LOCATION=file:/opt/csye6225/application.properties"
+# Add logging configuration for CloudWatch to pick up
+Environment="LOGGING_FILE_NAME=/var/log/webapp.log"
+# Spring Boot metrics configuration
+Environment="MANAGEMENT_METRICS_EXPORT_STATSD_ENABLED=true"
+Environment="MANAGEMENT_METRICS_EXPORT_STATSD_HOST=localhost"
+Environment="MANAGEMENT_METRICS_EXPORT_STATSD_PORT=8125"
 ExecStart=/usr/bin/java -jar /opt/csye6225/webapp-0.0.1-SNAPSHOT.jar
 SuccessExitStatus=143
 # Add environment file support for database credentials
 EnvironmentFile=/etc/environment
 Restart=always
+# Define restart policy
+RestartSec=10
+TimeoutStopSec=30
+
+# Ensure logs directory exists and has proper permissions
+ExecStartPre=/bin/mkdir -p /var/log/webapp
+ExecStartPre=/bin/chown saurabh_user:saurabh_group /var/log/webapp
+ExecStartPre=/bin/chmod 755 /var/log/webapp
 
 [Install]
 WantedBy=multi-user.target
