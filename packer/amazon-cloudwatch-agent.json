@@ -9,61 +9,28 @@
         "collect_list": [
           {
             "file_path": "/var/log/webapp.log",
-            "log_group_name": "webapp-logs",
-            "log_stream_name": "{instance_id}-webapp",
+            "log_group_name": "csye6225-webapp-logs",
+            "log_stream_name": "{instance_id}-webapp-events",
             "timezone": "UTC"
           },
           {
             "file_path": "/var/log/syslog",
-            "log_group_name": "system-logs",
-            "log_stream_name": "{instance_id}-syslog",
+            "log_group_name": "csye6225-system-logs",
+            "log_stream_name": "{instance_id}-syslog-events",
             "timezone": "UTC"
           }
         ]
       }
-    }
+    },
+    "force_flush_interval": 15
   },
   "metrics": {
-    "namespace": "WebApp",
+    "namespace": "CSYE6225WebApp",
     "metrics_collected": {
       "statsd": {
         "service_address": ":8125",
         "metrics_collection_interval": 60,
         "metrics_aggregation_interval": 60
-      },
-      "cpu": {
-        "resources": [
-          "*"
-        ],
-        "measurement": [
-          "cpu_usage_idle",
-          "cpu_usage_user",
-          "cpu_usage_system"
-        ],
-        "metrics_collection_interval": 60
-      },
-      "mem": {
-        "measurement": [
-          "mem_used_percent",
-          "mem_available_percent"
-        ],
-        "metrics_collection_interval": 60
-      },
-      "disk": {
-        "resources": [
-          "/"
-        ],
-        "measurement": [
-          "disk_used_percent"
-        ],
-        "metrics_collection_interval": 60
-      },
-      "netstat": {
-        "measurement": [
-          "tcp_established",
-          "tcp_close_wait"
-        ],
-        "metrics_collection_interval": 60
       }
     },
     "append_dimensions": {
