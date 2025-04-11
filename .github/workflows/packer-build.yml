@@ -1,4 +1,4 @@
-name: Build and Share Custom Images
+\name: Build and Share Custom Images
 
 on:
   pull_request:
@@ -64,14 +64,7 @@ jobs:
           aws ec2 wait image-available --image-ids ${{ steps.get-ami.outputs.ami_id }}
           echo "AMI is now available."
 
-      - name: Configure AWS Credentials for Demo Account
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Share and Copy AMI to Demo Account
+      - name: Share AMI with Demo Account
         run: |
           DEV_ACCOUNT_ID=${{ secrets.DEV_AWS_ACCOUNT_ID }}
           DEMO_ACCOUNT_ID=${{ secrets.DEMO_AWS_ACCOUNT_ID }}
@@ -88,6 +81,16 @@ jobs:
             sleep $((i * 5))
           done
 
+      - name: Configure AWS Credentials for Demo Account
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Copy Shared AMI in Demo Account
+        run: |
+          AMI_ID="${{ steps.get-ami.outputs.ami_id }}"
           echo "Copying the shared AMI..."
           COPIED_AMI_ID=$(aws ec2 copy-image \
             --source-image-id $AMI_ID \
