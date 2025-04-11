@@ -64,22 +64,33 @@ jobs:
           aws ec2 wait image-available --image-ids ${{ steps.get-ami.outputs.ami_id }}
           echo "AMI is now available."
 
-      - name: Share AMI with Demo Account
+      - name: Share AMI and Snapshot with Demo Account
         run: |
-          DEV_ACCOUNT_ID=${{ secrets.DEV_AWS_ACCOUNT_ID }}
-          DEMO_ACCOUNT_ID=${{ secrets.DEMO_AWS_ACCOUNT_ID }}
           AMI_ID="${{ steps.get-ami.outputs.ami_id }}"
-
+          DEMO_ACCOUNT_ID=${{ secrets.DEMO_AWS_ACCOUNT_ID }}
+          
           echo "Sharing AMI $AMI_ID with account $DEMO_ACCOUNT_ID"
-
-          # Retry logic for sharing the AMI
-          for i in {1..5}; do
-            aws ec2 modify-image-attribute \
-              --image-id $AMI_ID \
-              --launch-permission "Add=[{UserId=$DEMO_ACCOUNT_ID}]" && break
-            echo "Retrying to share the AMI ($i/5)..."
-            sleep $((i * 5))
-          done
+          # Share the AMI
+          aws ec2 modify-image-attribute \
+            --image-id $AMI_ID \
+            --launch-permission "Add=[{UserId=$DEMO_ACCOUNT_ID}]"
+          
+          # Get and share the snapshot
+          SNAPSHOT_ID=$(aws ec2 describe-images \
+            --image-ids $AMI_ID \
+            --query 'Images[0].BlockDeviceMappings[0].Ebs.SnapshotId' \
+            --output text)
+          
+          echo "Sharing snapshot $SNAPSHOT_ID with account $DEMO_ACCOUNT_ID"
+          aws ec2 modify-snapshot-attribute \
+            --snapshot-id $SNAPSHOT_ID \
+            --attribute createVolumePermission \
+            --operation-type add \
+            --user-ids $DEMO_ACCOUNT_ID
+          
+          # Add a delay to ensure permissions propagate
+          echo "Waiting for permissions to propagate..."
+          sleep 15
 
       - name: Configure AWS Credentials for Demo Account
         uses: aws-actions/configure-aws-credentials@v1
