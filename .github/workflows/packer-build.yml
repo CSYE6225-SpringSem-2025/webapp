@@ -100,6 +100,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Copy Shared AMI in Demo Account
+        id: copy-ami
         run: |
           AMI_ID="${{ steps.get-ami.outputs.ami_id }}"
           echo "Copying the shared AMI..."
@@ -112,7 +113,91 @@ jobs:
             --output text)
 
           echo "Copied AMI ID: $COPIED_AMI_ID"
+          echo "copied_ami_id=$COPIED_AMI_ID" >> $GITHUB_OUTPUT
 
           aws ec2 create-tags \
             --resources $COPIED_AMI_ID \
             --tags Key=Name,Value="Copied-WebApp-AMI"
+
+      - name: Wait for Copied AMI to be available
+        run: |
+          echo "Waiting for copied AMI to become available..."
+          aws ec2 wait image-available --image-ids ${{ steps.copy-ami.outputs.copied_ami_id }}
+          echo "Copied AMI is now available."
+
+      - name: Create New Launch Template Version
+        id: create-lt-version
+        run: |
+          # Get the Launch Template ID
+          LAUNCH_TEMPLATE_ID=$(aws ec2 describe-launch-templates \
+            --filters "Name=launch-template-name,Values=csye6225_asg" \
+            --query "LaunchTemplates[0].LaunchTemplateId" \
+            --output text)
+          
+          echo "Launch Template ID: $LAUNCH_TEMPLATE_ID"
+          
+          # Get current version details
+          CURRENT_VERSION=$(aws ec2 describe-launch-template-versions \
+            --launch-template-id $LAUNCH_TEMPLATE_ID \
+            --versions '$Latest' \
+            --query 'LaunchTemplateVersions[0]' \
+            --output json)
+          
+          # Create a new version with updated AMI ID
+          NEW_VERSION=$(aws ec2 create-launch-template-version \
+            --launch-template-id $LAUNCH_TEMPLATE_ID \
+            --version-description "Updated with AMI ${{ steps.copy-ami.outputs.copied_ami_id }}" \
+            --source-version '$Latest' \
+            --launch-template-data "{\"ImageId\":\"${{ steps.copy-ami.outputs.copied_ami_id }}\"}" \
+            --query 'LaunchTemplateVersion.VersionNumber' \
+            --output text)
+          
+          echo "Created new Launch Template version: $NEW_VERSION"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Get Auto Scaling Group Name
+        id: get-asg
+        run: |
+          ASG_NAME=$(aws autoscaling describe-auto-scaling-groups \
+            --query "AutoScalingGroups[?contains(Tags[?Key=='Name'].Value, 'webapp') || AutoScalingGroupName=='app-auto-scaling-group'].AutoScalingGroupName" \
+            --output text)
+          
+          echo "Auto Scaling Group Name: $ASG_NAME"
+          echo "asg_name=$ASG_NAME" >> $GITHUB_OUTPUT
+
+      - name: Start Instance Refresh
+        id: start-refresh
+        run: |
+          REFRESH_ID=$(aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name ${{ steps.get-asg.outputs.asg_name }} \
+            --preferences '{"MinHealthyPercentage": 90, "InstanceWarmup": 300}' \
+            --query 'InstanceRefreshId' \
+            --output text)
+          
+          echo "Started instance refresh with ID: $REFRESH_ID"
+          echo "refresh_id=$REFRESH_ID" >> $GITHUB_OUTPUT
+
+      - name: Wait for Instance Refresh to Complete
+        run: |
+          echo "Waiting for instance refresh to complete..."
+          
+          while true; do
+            STATUS=$(aws autoscaling describe-instance-refreshes \
+              --auto-scaling-group-name ${{ steps.get-asg.outputs.asg_name }} \
+              --instance-refresh-ids ${{ steps.start-refresh.outputs.refresh_id }} \
+              --query 'InstanceRefreshes[0].Status' \
+              --output text)
+          
+            echo "Current status: $STATUS"
+          
+            if [ "$STATUS" = "Successful" ]; then
+              echo "Instance refresh completed successfully!"
+              exit 0
+            elif [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelled" ]; then
+              echo "Instance refresh failed or was cancelled."
+              exit 1
+            fi
+          
+            echo "Still in progress. Checking again in 30 seconds..."
+            sleep 30
+          done
