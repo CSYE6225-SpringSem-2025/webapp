@@ -1,4 +1,4 @@
-name: Build Custom Images
+name: Build and Share Custom Images
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  build-and-share:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
@@ -23,14 +23,12 @@ jobs:
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentials for Dev Account
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-
-
 
       - name: Setup Packer
         uses: hashicorp/setup-packer@main
@@ -42,7 +40,7 @@ jobs:
           cd packer
           packer init .
 
-      - name: Build Images
+      - name: Build Images in Dev Account
         run: |
           # Create temp credentials file from secret
           echo '${{ secrets.GCP_SA_KEY }}' > /tmp/gcp-key.json
@@ -52,3 +50,31 @@ jobs:
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp-key.json
 
+      - name: Get Latest AMI ID
+        id: get-ami
+        run: |
+          # Assuming you have a tag or naming convention to identify the latest AMI
+          AMI_ID=$(aws ec2 describe-images \
+            --owners self \
+            --filters "Name=tag:Build,Values=latest" \
+            --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
+            --output text)
+          echo "ami_id=$AMI_ID" >> $GITHUB_OUTPUT
+
+      - name: Configure AWS Credentials for Demo Account
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Share AMI to Demo Account
+        run: |
+          DEV_ACCOUNT_ID=${{ secrets.DEV_AWS_ACCOUNT_ID }}
+          DEMO_ACCOUNT_ID=${{ secrets.DEMO_AWS_ACCOUNT_ID }}
+          AMI_ID="${{ steps.get-ami.outputs.ami_id }}"
+          
+          # Share the AMI with the Demo account
+          aws ec2 modify-image-attribute \
+            --image-id $AMI_ID \
+            --launch-permission "Add=[{UserId=$DEMO_ACCOUNT_ID}]"
