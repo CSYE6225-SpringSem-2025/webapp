@@ -67,13 +67,27 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Share AMI to Demo Account
+      - name: Share and Copy AMI to Demo Account
         run: |
           DEV_ACCOUNT_ID=${{ secrets.DEV_AWS_ACCOUNT_ID }}
           DEMO_ACCOUNT_ID=${{ secrets.DEMO_AWS_ACCOUNT_ID }}
           AMI_ID="${{ steps.get-ami.outputs.ami_id }}"
           
-          # Share the AMI with the Demo account
+          # Share the AMI launch permissions with the Demo account
           aws ec2 modify-image-attribute \
             --image-id $AMI_ID \
             --launch-permission "Add=[{UserId=$DEMO_ACCOUNT_ID}]"
+          
+          # Copy the AMI to the Demo account
+          COPIED_AMI_ID=$(aws ec2 copy-image \
+            --source-image-id $AMI_ID \
+            --source-region us-east-1 \
+            --region us-east-1 \
+            --name "Copied-WebApp-AMI-$(date +%Y%m%d-%H%M%S)" \
+            --query 'ImageId' \
+            --output text)
+          
+          # Optional: Add tags to the copied AMI
+          aws ec2 create-tags \
+            --resources $COPIED_AMI_ID \
+            --tags Key=Name,Value="Copied-WebApp-AMI"
