@@ -56,7 +56,6 @@ jobs:
           # Assuming you have a tag or naming convention to identify the latest AMI
           AMI_ID=$(aws ec2 describe-images \
             --owners self \
-            --filters "Name=tag:Build,Values=latest" \
             --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
             --output text)
           echo "ami_id=$AMI_ID" >> $GITHUB_OUTPUT
