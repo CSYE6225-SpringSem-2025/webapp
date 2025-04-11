@@ -64,7 +64,7 @@ public class HealthCheckController {
         logger.info("CICD endpoint called");
 
         if (body != null && !body.isEmpty()) {
-            logger.warn("Health check called with request body, returning 400");
+            logger.warn("CICD called with request body, returning 400");
             return ResponseEntity.badRequest().build(); // 400
         }
 
