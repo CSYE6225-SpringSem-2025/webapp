@@ -74,7 +74,7 @@ public class HealthCheckController {
         }
 
         try {
-            logger.debug("Creating health check record");
+            logger.debug("Creating cicd test check record");
             HealthCheck check = new HealthCheck();
             check.setDatetime(LocalDateTime.now(ZoneOffset.UTC));
             repository.save(check);
