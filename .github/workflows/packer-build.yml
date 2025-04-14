@@ -128,21 +128,20 @@ jobs:
       - name: Create New Launch Template Version
         id: create-lt-version
         run: |
-          # Get the Launch Template ID
+          # Get the most recently created Launch Template ID
           LAUNCH_TEMPLATE_ID=$(aws ec2 describe-launch-templates \
-            --filters "Name=launch-template-name,Values=csye6225_asg" \
-            --query "LaunchTemplates[0].LaunchTemplateId" \
+            --query "sort_by(LaunchTemplates, &CreateTime)[-1].LaunchTemplateId" \
             --output text)
-          
-          echo "Launch Template ID: $LAUNCH_TEMPLATE_ID"
-          
+
+          echo "Latest Launch Template ID: $LAUNCH_TEMPLATE_ID"
+
           # Get current version details
           CURRENT_VERSION=$(aws ec2 describe-launch-template-versions \
             --launch-template-id $LAUNCH_TEMPLATE_ID \
             --versions '$Latest' \
             --query 'LaunchTemplateVersions[0]' \
             --output json)
-          
+
           # Create a new version with updated AMI ID
           NEW_VERSION=$(aws ec2 create-launch-template-version \
             --launch-template-id $LAUNCH_TEMPLATE_ID \
@@ -151,7 +150,7 @@ jobs:
             --launch-template-data "{\"ImageId\":\"${{ steps.copy-ami.outputs.copied_ami_id }}\"}" \
             --query 'LaunchTemplateVersion.VersionNumber' \
             --output text)
-          
+
           echo "Created new Launch Template version: $NEW_VERSION"
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
