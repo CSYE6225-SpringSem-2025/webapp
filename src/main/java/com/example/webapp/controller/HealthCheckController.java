@@ -59,6 +59,42 @@ public class HealthCheckController {
         }
     }
 
+    @GetMapping("/cicd6")
+    public ResponseEntity<Void> cicdcheck6(@RequestBody(required = false) String body, @RequestParam Map<String, String> params) {
+        logger.info("CICD6 endpoint called");
+
+        if (body != null && !body.isEmpty()) {
+            logger.warn("CICD called with request body, returning 400");
+            return ResponseEntity.badRequest().build(); // 400
+        }
+
+        if (!params.isEmpty()) {
+            logger.warn("Health check called with query parameters: {}, returning 400", params);
+            return ResponseEntity.badRequest().build(); // 400
+        }
+
+        try {
+            logger.debug("Creating cicd test check record");
+            HealthCheck check = new HealthCheck();
+            check.setDatetime(LocalDateTime.now(ZoneOffset.UTC));
+            repository.save(check);
+            logger.info("Health check record created successfully");
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setCacheControl("no-cache, no-store, must-revalidate");
+            headers.setPragma("no-cache");
+
+            logger.info("Health check successful, returning 200 OK");
+            return ResponseEntity.ok().headers(headers).build(); // 200
+        } catch (DataAccessException e) {
+            logger.error("Database access error during health check: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build(); // 503
+        } catch (Exception e) {
+            logger.error("Unexpected error during health check: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build(); // 503
+        }
+    }
+
     @GetMapping("/cicd")
     public ResponseEntity<Void> cicdcheck(@RequestBody(required = false) String body, @RequestParam Map<String, String> params) {
         logger.info("CICD endpoint called");

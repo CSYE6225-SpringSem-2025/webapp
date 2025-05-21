@@ -111,4 +111,32 @@ public class HealthCheckControllerTest {
 
     }
 
+    @Test
+    public void testCicd6_Success() {
+        given()
+                .when()
+                .get("/cicd6")
+                .then()
+                .statusCode(HttpStatus.OK.value());
+    }
+
+    @Test
+    public void testCicd6_WithRequestBody() {
+        given()
+                .body("Unexpected body content")
+                .when()
+                .get("/cicd6")
+                .then()
+                .statusCode(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @Test
+    public void testCicd6_WithQueryParams() {
+        given()
+                .queryParam("test", "test")
+                .when()
+                .get("/cicd6")
+                .then()
+                .statusCode(HttpStatus.BAD_REQUEST.value());
+    }
 }
